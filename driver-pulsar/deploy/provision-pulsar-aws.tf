@@ -8,8 +8,11 @@ Example: ~/.ssh/pulsar_aws.pub
 DESCRIPTION
 }
 
+provider "random" {
+  version = "1.1"
+}
+
 resource "random_id" "random" {
-  version     = "1.1"
   byte_length = 4
 }
 
