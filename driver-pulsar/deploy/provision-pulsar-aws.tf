@@ -8,6 +8,11 @@ Example: ~/.ssh/pulsar_aws.pub
 DESCRIPTION
 }
 
+resource "random_id" "random" {
+  version     = "1.1"
+  byte_length = 4
+}
+
 variable "key_name" {
   default     = "pulsar-benchmark-key"
   description = "Desired name of AWS key pair"
@@ -26,7 +31,8 @@ variable "num_instances" {
 }
 
 provider "aws" {
-  region = "${var.region}"
+  region  = "${var.region}"
+  version = "1.8"
 }
 
 # Create a VPC to launch our instances into
@@ -34,7 +40,7 @@ resource "aws_vpc" "benchmark_vpc" {
   cidr_block = "10.0.0.0/16"
 
   tags {
-    Name = "Benchmark-VPC"
+    Name = "Benchmark-VPC-${random_id.random.hex}"
   }
 }
 
@@ -58,7 +64,7 @@ resource "aws_subnet" "benchmark_subnet" {
 }
 
 resource "aws_security_group" "benchmark_security_group" {
-  name   = "terraform"
+  name   = "terraform-${random_id.random.hex}"
   vpc_id = "${aws_vpc.benchmark_vpc.id}"
 
   # SSH access from anywhere
@@ -91,7 +97,7 @@ resource "aws_security_group" "benchmark_security_group" {
 }
 
 resource "aws_key_pair" "auth" {
-  key_name   = "${var.key_name}"
+  key_name   = "${var.key_name}-${random_id.random.hex}"
   public_key = "${file(var.public_key_path)}"
 }
 
@@ -104,7 +110,7 @@ resource "aws_instance" "zookeeper" {
   count                  = "${var.num_instances["zookeeper"]}"
 
   tags {
-    Name = "zk-${count.index}"
+    Name = "zk-${count.index}-${random_id.random.hex}"
   }
 }
 
@@ -117,7 +123,7 @@ resource "aws_instance" "pulsar" {
   count                  = "${var.num_instances["pulsar"]}"
 
   tags {
-    Name = "pulsar-${count.index}"
+    Name = "pulsar-${count.index}-${random_id.random.hex}"
   }
 }
 
@@ -130,7 +136,7 @@ resource "aws_instance" "client" {
   count                  = 1
 
   tags {
-    Name = "pulsar-client-${count.index}"
+    Name = "pulsar-client-${count.index}-${random_id.random.hex}"
   }
 }
 
